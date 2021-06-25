@@ -20,16 +20,12 @@
 
 #include <string>
 #include <memory>
-#include <mutex>
 
+#include <ignition/common/MouseEvent.hh>
 #include <ignition/math/Color.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector2.hh>
-#include <ignition/math/Vector3.hh>
 
-#include <ignition/common/MouseEvent.hh>
-
-#include "ignition/gui/qt.h"
 #include "ignition/gui/Plugin.hh"
 
 namespace ignition
@@ -58,6 +54,7 @@ namespace plugins
   ///                          (0.3, 0.3, 0.3, 1.0)
   /// * \<camera_pose\> : Optional starting pose for the camera, defaults to
   ///                     (0, 0, 5, 0, 0, 0)
+  /// * \<sky\> : If present, sky is enabled.
   class MinimalScene : public Plugin
   {
     Q_OBJECT
@@ -67,6 +64,18 @@ namespace plugins
 
     /// \brief Destructor
     public: virtual ~MinimalScene();
+
+    /// \brief Callback when the mouse hovers to a new position.
+    /// \param[in] _mouseX x coordinate of the hovered mouse position.
+    /// \param[in] _mouseY y coordinate of the hovered mouse position.
+    public slots: void OnHovered(int _mouseX, int _mouseY);
+
+    /// \brief Callback when the mouse enters the render window to
+    /// focus the window for mouse/key events
+    public slots: void OnFocusWindow();
+
+    // Documentation inherited
+    protected: bool eventFilter(QObject *_obj, QEvent *_event) override;
 
     // Documentation inherited
     public: virtual void LoadConfig(const tinyxml2::XMLElement *_pluginElem)
@@ -104,10 +113,32 @@ namespace plugins
     /// \param[in] _e New mouse event
     public: void NewMouseEvent(const common::MouseEvent &_e);
 
+    /// \brief New hover event triggered.
+    /// \param[in] _hoverPos Mouse hover screen position
+    public: void NewHoverEvent(const math::Vector2i &_hoverPos);
+
+    /// \brief Handle key press event for snapping
+    /// \param[in] _e The key event to process.
+    public: void HandleKeyPress(QKeyEvent *_e);
+
+    /// \brief Handle key release event for snapping
+    /// \param[in] _e The key event to process.
+    public: void HandleKeyRelease(QKeyEvent *_e);
+
     /// \brief Handle mouse event for view control
     private: void HandleMouseEvent();
 
-    public: void BroadcastLeftClick();
+    /// \brief Handle mouse event for view control
+    private: void HandleMouseViewControl();
+
+    /// \brief Broadcasts the currently hovered 3d scene location.
+    private: void BroadcastHoverPos();
+
+    /// \brief Broadcasts a left click within the scene
+    private: void BroadcastLeftClick();
+
+    /// \brief Broadcasts a right click within the scene
+    private: void BroadcastRightClick();
 
     /// \brief Retrieve the first point on a surface in the 3D scene hit by a
     /// ray cast from the given 2D screen coordinates.
@@ -257,12 +288,25 @@ namespace plugins
     /// \param[in] _topic Scene topic
     public: void SetSceneTopic(const std::string &_topic);
 
+    /// \brief Called when the mouse hovers to a new position.
+    /// \param[in] _hoverPos 2D coordinates of the hovered mouse position on
+    /// the render window.
+    public: void OnHovered(const ignition::math::Vector2i &_hoverPos);
+
     /// \brief Set if sky is enabled
     /// \param[in] _sky True to enable the sky, false otherwise.
     public: void SetSkyEnabled(const bool &_sky);
 
     /// \brief Slot called when thread is ready to be started
     public Q_SLOTS: void Ready();
+
+    /// \brief Handle key press event for snapping
+    /// \param[in] _e The key event to process.
+    public: void HandleKeyPress(QKeyEvent *_e);
+
+    /// \brief Handle key release event for snapping
+    /// \param[in] _e The key event to process.
+    public: void HandleKeyRelease(QKeyEvent *_e);
 
     // Documentation inherited
     protected: virtual void mousePressEvent(QMouseEvent *_e) override;
