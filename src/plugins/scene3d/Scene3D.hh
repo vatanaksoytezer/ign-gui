@@ -103,9 +103,8 @@ namespace plugins
     /// \brief New mouse event triggered
     /// \param[in] _e New mouse event
     /// \param[in] _drag Mouse move distance
-    public: void NewMouseEvent(const common::MouseEvent &_e);
-
-    public: void BroadcastLeftClick();
+    public: void NewMouseEvent(const common::MouseEvent &_e,
+        const math::Vector2d &_drag = math::Vector2d::Zero);
 
     /// \brief Handle mouse event for view control
     private: void HandleMouseEvent();
