@@ -29,6 +29,11 @@ class ignition::gui::events::RightClickOnScene::Implementation
   public: common::MouseEvent mouse;
 };
 
+class ignition::gui::events::BlockOrbit::Implementation
+{
+  public: bool block;
+};
+
 using namespace ignition;
 using namespace gui;
 using namespace events;
@@ -59,3 +64,15 @@ const common::MouseEvent &LeftClickOnScene::Mouse() const
   return this->dataPtr->mouse;
 }
 
+/////////////////////////////////////////////////
+BlockOrbit::BlockOrbit(const bool &_block)
+  : QEvent(kType), dataPtr(utils::MakeImpl<Implementation>())
+{
+  this->dataPtr->block = _block;
+}
+
+/////////////////////////////////////////////////
+bool BlockOrbit::Block() const
+{
+  return this->dataPtr->block;
+}

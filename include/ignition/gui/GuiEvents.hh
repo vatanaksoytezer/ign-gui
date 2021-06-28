@@ -311,22 +311,18 @@ namespace ignition
         IGN_UTILS_IMPL_PTR(dataPtr)
       };
 
-      class BlockOrbit : public QEvent
+      class IGNITION_GUI_VISIBLE BlockOrbit : public QEvent
       {
-        public: explicit BlockOrbit(const bool &_block)
-            : QEvent(kType), block(_block)
-        {
-        }
+        public: explicit BlockOrbit(const bool &_block);
 
         /// \brief Unique type for this event.
         static const QEvent::Type kType = QEvent::Type(QEvent::MaxUser - 12);
 
-        public: bool Block() const
-        {
-          return this->block;
-        }
+        public: bool Block() const;
 
-        private: bool block;
+        /// \internal
+        /// \brief Private data pointer
+        IGN_UTILS_IMPL_PTR(dataPtr)
       };
     }
   }
