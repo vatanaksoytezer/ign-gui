@@ -185,7 +185,7 @@ ViewControl::~ViewControl()
 }
 
 /////////////////////////////////////////////////
-void ViewControl::LoadConfig(const tinyxml2::XMLElement *_pluginElem)
+void ViewControl::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
 {
   ignition::gui::App()->findChild<
     ignition::gui::MainWindow *>()->installEventFilter(this);
