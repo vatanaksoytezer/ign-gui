@@ -232,7 +232,6 @@ namespace plugins
     public: IgnRenderer ignRenderer;
   };
 
-
   /// \brief A QQUickItem that manages the render window
   class RenderWindowItem : public QQuickItem
   {
