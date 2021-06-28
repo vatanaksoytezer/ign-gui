@@ -79,11 +79,22 @@ void ViewControlPrivate::OnRender()
     if (!this->scene)
       return;
 
-    this->camera = std::dynamic_pointer_cast<rendering::Camera>(
-      this->scene->SensorByName("Scene3DCamera"));
+    for (unsigned int i = 0; i < scene->NodeCount(); ++i)
+    {
+      auto cam = std::dynamic_pointer_cast<rendering::Camera>(
+        scene->NodeByIndex(i));
+      if (cam)
+      {
+        this->camera = cam;
+        igndbg << "ViewControl plugin is moving camera ["
+               << this->camera->Name() << "]" << std::endl;
+        break;
+      }
+    }
+
     if (!this->camera)
     {
-      ignerr << "TransformControlLogic Camera is not available" << std::endl;
+      ignerr << "ViewControl camera is not available" << std::endl;
       return;
     }
     this->rayQuery = this->camera->Scene()->CreateRayQuery();

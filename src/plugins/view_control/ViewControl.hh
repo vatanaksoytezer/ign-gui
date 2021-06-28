@@ -30,7 +30,8 @@ namespace plugins
 {
   class ViewControlPrivate;
 
-  /// \brief
+  /// \brief This Plugin allows to control the scene3D camera
+  /// with the mouse
   class ViewControl : public Plugin
   {
     Q_OBJECT

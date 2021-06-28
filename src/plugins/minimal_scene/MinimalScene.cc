@@ -315,7 +315,7 @@ void IgnRenderer::Initialize()
   auto root = scene->RootVisual();
 
   // Camera
-  this->dataPtr->camera = scene->CreateCamera("Scene3DCamera");
+  this->dataPtr->camera = scene->CreateCamera();
   root->AddChild(this->dataPtr->camera);
   this->dataPtr->camera->SetLocalPose(this->cameraPose);
   this->dataPtr->camera->SetImageWidth(this->textureSize.width());
