@@ -15,6 +15,8 @@
  *
  */
 
+#include <string>
+
 #include <ignition/common/MouseEvent.hh>
 
 #include <ignition/gui/Application.hh>
@@ -85,7 +87,7 @@ void InteractiveViewControlPrivate::OnRender()
         scene->NodeByIndex(i));
       if (cam)
       {
-        if (cam->Name().find("scene::Camera")!=std::string::npos)
+        if (cam->Name().find("scene::Camera") != std::string::npos)
         {
           this->camera = cam;
           igndbg << "InteractiveViewControl plugin is moving camera ["
@@ -199,7 +201,8 @@ InteractiveViewControl::~InteractiveViewControl()
 }
 
 /////////////////////////////////////////////////
-void InteractiveViewControl::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
+void InteractiveViewControl::LoadConfig(
+  const tinyxml2::XMLElement * /*_pluginElem*/)
 {
   ignition::gui::App()->findChild<
     ignition::gui::MainWindow *>()->installEventFilter(this);
