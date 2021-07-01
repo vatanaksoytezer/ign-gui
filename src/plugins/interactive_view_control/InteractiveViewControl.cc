@@ -28,10 +28,10 @@
 #include <ignition/rendering/RenderingIface.hh>
 #include <ignition/rendering/RayQuery.hh>
 
-#include "ViewControl.hh"
+#include "InteractiveViewControl.hh"
 
-/// \brief Private data class for ViewControl
-class ignition::gui::plugins::ViewControlPrivate
+/// \brief Private data class for InteractiveViewControl
+class ignition::gui::plugins::InteractiveViewControlPrivate
 {
   /// \brief
   public: void OnRender();
@@ -51,7 +51,7 @@ class ignition::gui::plugins::ViewControlPrivate
   public: math::Vector2d drag;
 
   /// \brief User camera
-  public: rendering::CameraPtr camera;
+  public: rendering::CameraPtr camera{nullptr};
 
   /// \brief View control focus target
   public: math::Vector3d target;
@@ -63,7 +63,7 @@ class ignition::gui::plugins::ViewControlPrivate
   public: rendering::RayQueryPtr rayQuery;
 
   //// \brief Pointer to the rendering scene
-  public: rendering::ScenePtr scene = nullptr;
+  public: rendering::ScenePtr scene{nullptr};
 };
 
 using namespace ignition;
@@ -71,7 +71,7 @@ using namespace gui;
 using namespace plugins;
 
 /////////////////////////////////////////////////
-void ViewControlPrivate::OnRender()
+void InteractiveViewControlPrivate::OnRender()
 {
   if (!this->scene)
   {
@@ -85,16 +85,19 @@ void ViewControlPrivate::OnRender()
         scene->NodeByIndex(i));
       if (cam)
       {
-        this->camera = cam;
-        igndbg << "ViewControl plugin is moving camera ["
-               << this->camera->Name() << "]" << std::endl;
-        break;
+        if (cam->Name().find("scene::Camera")!=std::string::npos)
+        {
+          this->camera = cam;
+          igndbg << "InteractiveViewControl plugin is moving camera ["
+                 << this->camera->Name() << "]" << std::endl;
+          break;
+        }
       }
     }
 
     if (!this->camera)
     {
-      ignerr << "ViewControl camera is not available" << std::endl;
+      ignerr << "InteractiveViewControl camera is not available" << std::endl;
       return;
     }
     this->rayQuery = this->camera->Scene()->CreateRayQuery();
@@ -161,7 +164,7 @@ void ViewControlPrivate::OnRender()
 }
 
 /////////////////////////////////////////////////
-math::Vector3d ViewControlPrivate::ScreenToScene(
+math::Vector3d InteractiveViewControlPrivate::ScreenToScene(
     const math::Vector2i &_screenPos) const
 {
   // Normalize point on the image
@@ -185,25 +188,25 @@ math::Vector3d ViewControlPrivate::ScreenToScene(
 }
 
 /////////////////////////////////////////////////
-ViewControl::ViewControl()
-  : Plugin(), dataPtr(new ViewControlPrivate)
+InteractiveViewControl::InteractiveViewControl()
+  : Plugin(), dataPtr(new InteractiveViewControlPrivate)
 {
 }
 
 /////////////////////////////////////////////////
-ViewControl::~ViewControl()
+InteractiveViewControl::~InteractiveViewControl()
 {
 }
 
 /////////////////////////////////////////////////
-void ViewControl::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
+void InteractiveViewControl::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
 {
   ignition::gui::App()->findChild<
     ignition::gui::MainWindow *>()->installEventFilter(this);
 }
 
 /////////////////////////////////////////////////
-bool ViewControl::eventFilter(QObject *_obj, QEvent *_event)
+bool InteractiveViewControl::eventFilter(QObject *_obj, QEvent *_event)
 {
   if (_event->type() == events::Render::kType)
   {
@@ -241,6 +244,7 @@ bool ViewControl::eventFilter(QObject *_obj, QEvent *_event)
     auto blockOrbit = reinterpret_cast<ignition::gui::events::BlockOrbit *>(
       _event);
     this->dataPtr->blockOrbit = blockOrbit->Block();
+    std::cerr << "BlockOrbit " << blockOrbit->Block() << '\n';
   }
 
   // Standard event processing
@@ -248,5 +252,5 @@ bool ViewControl::eventFilter(QObject *_obj, QEvent *_event)
 }
 
 // Register this plugin
-IGNITION_ADD_PLUGIN(ignition::gui::plugins::ViewControl,
+IGNITION_ADD_PLUGIN(ignition::gui::plugins::InteractiveViewControl,
                     ignition::gui::Plugin)

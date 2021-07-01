@@ -1,8 +1,8 @@
-ign_gui_add_plugin(ViewControl
+ign_gui_add_plugin(InteractiveViewControl
   SOURCES
-    ViewControl.cc
+    InteractiveViewControl.cc
   QT_HEADERS
-    ViewControl.hh
+    InteractiveViewControl.hh
   TEST_SOURCES
     # ViewControl_TEST.cc
   PUBLIC_LINK_LIBS

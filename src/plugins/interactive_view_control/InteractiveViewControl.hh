@@ -15,8 +15,8 @@
  *
 */
 
-#ifndef IGNITION_GUI_PLUGINS_VIEWCONTROL_HH_
-#define IGNITION_GUI_PLUGINS_VIEWCONTROL_HH_
+#ifndef IGNITION_GUI_PLUGINS_INTERACTIVEVIEWCONTROL_HH_
+#define IGNITION_GUI_PLUGINS_INTERACTIVEVIEWCONTROL_HH_
 
 #include <memory>
 
@@ -28,19 +28,19 @@ namespace gui
 {
 namespace plugins
 {
-  class ViewControlPrivate;
+  class InteractiveViewControlPrivate;
 
   /// \brief This Plugin allows to control the scene3D camera
   /// with the mouse
-  class ViewControl : public Plugin
+  class InteractiveViewControl : public Plugin
   {
     Q_OBJECT
 
     /// \brief Constructor
-    public: ViewControl();
+    public: InteractiveViewControl();
 
     /// \brief Destructor
-    public: virtual ~ViewControl();
+    public: virtual ~InteractiveViewControl();
 
     // Documentation inherited
     public: virtual void LoadConfig(const tinyxml2::XMLElement *_pluginElem)
@@ -51,7 +51,7 @@ namespace plugins
 
     /// \internal
     /// \brief Pointer to private data.
-    private: std::unique_ptr<ViewControlPrivate> dataPtr;
+    private: std::unique_ptr<InteractiveViewControlPrivate> dataPtr;
   };
 }
 }
