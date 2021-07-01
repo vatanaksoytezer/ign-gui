@@ -34,6 +34,18 @@ class ignition::gui::events::BlockOrbit::Implementation
   public: bool block;
 };
 
+class ignition::gui::events::KeyReleaseOnScene::Implementation
+{
+  /// \brief Key event
+  public: common::KeyEvent key;
+};
+
+class ignition::gui::events::KeyPressOnScene::Implementation
+{
+  /// \brief Key event
+  public: common::KeyEvent key;
+};
+
 using namespace ignition;
 using namespace gui;
 using namespace events;
@@ -75,4 +87,32 @@ BlockOrbit::BlockOrbit(const bool &_block)
 bool BlockOrbit::Block() const
 {
   return this->dataPtr->block;
+}
+
+/////////////////////////////////////////////////
+KeyReleaseOnScene::KeyReleaseOnScene(
+  const common::KeyEvent &_key)
+    : QEvent(kType), dataPtr(utils::MakeImpl<Implementation>())
+{
+  this->dataPtr->key = _key;
+}
+
+/////////////////////////////////////////////////
+common::KeyEvent KeyReleaseOnScene::Key() const
+{
+  return this->dataPtr->key;
+}
+
+/////////////////////////////////////////////////
+KeyPressOnScene::KeyPressOnScene(
+  const common::KeyEvent &_key)
+    : QEvent(kType), dataPtr(utils::MakeImpl<Implementation>())
+{
+  this->dataPtr->key = _key;
+}
+
+/////////////////////////////////////////////////
+common::KeyEvent KeyPressOnScene::Key() const
+{
+  return this->dataPtr->key;
 }
