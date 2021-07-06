@@ -63,17 +63,17 @@ class ignition::gui::plugins::IgnRenderer::Implementation
   /// \brief Mouse event
   public: common::MouseEvent mouseEvent;
 
-    /// \brief Mouse event
-    public: common::KeyEvent keyEvent;
+  /// \brief Key event
+  public: common::KeyEvent keyEvent;
 
-    /// \brief Mutex to protect mouse events
-    public: std::mutex mutex;
+  /// \brief Mutex to protect mouse events
+  public: std::mutex mutex;
 
   /// \brief User camera
   public: rendering::CameraPtr camera{nullptr};
 
-    /// \brief The currently hovered mouse position in screen coordinates
-    public: math::Vector2i mouseHoverPos{math::Vector2i::Zero};
+  /// \brief The currently hovered mouse position in screen coordinates
+  public: math::Vector2i mouseHoverPos{math::Vector2i::Zero};
 
   /// \brief Ray query for mouse clicks
   public: rendering::RayQueryPtr rayQuery{nullptr};
