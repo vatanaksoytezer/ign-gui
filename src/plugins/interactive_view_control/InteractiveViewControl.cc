@@ -91,7 +91,16 @@ void InteractiveViewControlPrivate::OnRender()
         scene->NodeByIndex(i));
       if (cam)
       {
-        if (cam->Name().find("scene::Camera") != std::string::npos)
+        bool isUserCamera = false;
+        try
+        {
+          isUserCamera = std::get<bool>(cam->UserData("user-camera"));
+        }
+        catch (std::bad_variant_access &)
+        {
+          continue;
+        }
+        if (isUserCamera)
         {
           this->camera = cam;
           igndbg << "InteractiveViewControl plugin is moving camera ["
