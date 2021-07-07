@@ -35,15 +35,19 @@
 /// \brief Private data class for InteractiveViewControl
 class ignition::gui::plugins::InteractiveViewControlPrivate
 {
-  /// \brief
+  /// \brief Perform rendering calls in the rendering thread.
   public: void OnRender();
 
-  math::Vector3d ScreenToScene(
-      const math::Vector2i &_screenPos) const;
+  /// \brief Transform a position on screen to the first point that's hit on
+  /// the 3D scene
+  /// \param[in] _screenPos Position on 2D screen within the 3D scene
+  /// \return First point hit on the 3D scene.
+  math::Vector3d ScreenToScene(const math::Vector2i &_screenPos) const;
 
   /// \brief Flag to indicate if mouse event is dirty
   public: bool mouseDirty = false;
 
+  /// \brief True to block orbiting with the mouse.
   public: bool blockOrbit = false;
 
   /// \brief Mouse event
@@ -191,7 +195,7 @@ math::Vector3d InteractiveViewControlPrivate::ScreenToScene(
 
 /////////////////////////////////////////////////
 InteractiveViewControl::InteractiveViewControl()
-  : Plugin(), dataPtr(new InteractiveViewControlPrivate)
+  : Plugin(), dataPtr(std::make_unique<InteractiveViewControlPrivate>())
 {
 }
 
@@ -247,7 +251,6 @@ bool InteractiveViewControl::eventFilter(QObject *_obj, QEvent *_event)
     auto blockOrbit = reinterpret_cast<ignition::gui::events::BlockOrbit *>(
       _event);
     this->dataPtr->blockOrbit = blockOrbit->Block();
-    std::cerr << "BlockOrbit " << blockOrbit->Block() << '\n';
   }
 
   // Standard event processing
