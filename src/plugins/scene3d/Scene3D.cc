@@ -949,6 +949,7 @@ void IgnRenderer::HandleMouseViewControl()
           this->dataPtr->mouseEvent.PressPos());
       this->dataPtr->viewControl.SetTarget(this->dataPtr->target);
     }
+
     // Pan with left button
     if (this->dataPtr->mouseEvent.Buttons() & common::MouseEvent::LEFT)
     {
@@ -1675,7 +1676,6 @@ void RenderWindowItem::mouseMoveEvent(QMouseEvent *_e)
   auto dragDistance = math::Vector2d(dragInt.X(), dragInt.Y());
 
   this->dataPtr->renderThread->ignRenderer.NewMouseEvent(event, dragDistance);
-  this->dataPtr->renderThread->ignRenderer.NewMouseEvent(event);
   this->dataPtr->mouseEvent = event;
 }
 
@@ -1690,7 +1690,7 @@ void RenderWindowItem::wheelEvent(QWheelEvent *_e)
 #endif
   double scroll = (_e->angleDelta().y() > 0) ? -1.0 : 1.0;
   this->dataPtr->renderThread->ignRenderer.NewMouseEvent(
-    this->dataPtr->mouseEvent, math::Vector2d(scroll, scroll));
+      this->dataPtr->mouseEvent, math::Vector2d(scroll, scroll));
 }
 
 ////////////////////////////////////////////////
