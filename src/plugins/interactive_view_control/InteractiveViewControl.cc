@@ -16,6 +16,7 @@
  */
 
 #include <string>
+#include <mutex>
 
 #include <ignition/common/MouseEvent.hh>
 
@@ -27,8 +28,11 @@
 
 #include <ignition/rendering/Camera.hh>
 #include <ignition/rendering/OrbitViewController.hh>
+#include <ignition/rendering/OrthoViewController.hh>
 #include <ignition/rendering/RenderingIface.hh>
 #include <ignition/rendering/RayQuery.hh>
+
+#include <ignition/transport/Node.hh>
 
 #include "InteractiveViewControl.hh"
 
@@ -42,7 +46,14 @@ class ignition::gui::plugins::InteractiveViewControlPrivate
   /// the 3D scene
   /// \param[in] _screenPos Position on 2D screen within the 3D scene
   /// \return First point hit on the 3D scene.
-  math::Vector3d ScreenToScene(const math::Vector2i &_screenPos) const;
+  public: math::Vector3d ScreenToScene(const math::Vector2i &_screenPos) const;
+
+  /// \brief Callback for camera view controller request
+  /// \param[in] _msg Request message to set the camera view controller
+  /// \param[in] _res Response data
+  /// \return True if the request is received
+  public: bool OnViewControl(const msgs::StringMsg &_msg,
+    msgs::Boolean &_res);
 
   /// \brief Flag to indicate if mouse event is dirty
   public: bool mouseDirty = false;
@@ -62,14 +73,32 @@ class ignition::gui::plugins::InteractiveViewControlPrivate
   /// \brief View control focus target
   public: math::Vector3d target;
 
-  /// \brief Camera orbit controller
-  public: rendering::OrbitViewController viewControl;
+  /// \brief Orbit view controller
+  public: rendering::OrbitViewController orbitViewControl;
+
+  /// \brief Ortho view controller
+  public: rendering::OrthoViewController orthoViewControl;
+
+  /// \brief Camera view controller
+  public: rendering::ViewController *viewControl{nullptr};
+
+  /// \brief Mutex to protect View Controllers
+  public: std::mutex mutex;
+
+  /// \brief View controller
+  public: std::string viewController{"orbit"};
+
+  /// \brief Camera view control service
+  public: std::string cameraViewControlService;
 
   /// \brief Ray query for mouse clicks
   public: rendering::RayQueryPtr rayQuery;
 
   //// \brief Pointer to the rendering scene
   public: rendering::ScenePtr scene{nullptr};
+
+  /// \brief Transport node for making transform control requests
+  public: transport::Node node;
 };
 
 using namespace ignition;
@@ -127,17 +156,34 @@ void InteractiveViewControlPrivate::OnRender()
   if (!this->mouseDirty)
     return;
 
-  this->viewControl.SetCamera(this->camera);
+  std::lock_guard<std::mutex> lock(this->mutex);
+
+  if (this->viewController == "ortho")
+  {
+    this->viewControl = &this->orthoViewControl;
+  }
+  else if (this->viewController == "orbit")
+  {
+    this->viewControl = &this->orbitViewControl;
+  }
+  else
+  {
+    ignerr << "Unknown view controller: " << this->viewController
+           << ". Defaulting to orbit view controller" << std::endl;
+    this->viewController = "orbit";
+    this->viewControl = &this->orbitViewControl;
+  }
+  this->viewControl->SetCamera(this->camera);
 
   if (this->mouseEvent.Type() == common::MouseEvent::SCROLL)
   {
     this->target =
         this->ScreenToScene(this->mouseEvent.Pos());
-    this->viewControl.SetTarget(this->target);
+    this->viewControl->SetTarget(this->target);
     double distance = this->camera->WorldPosition().Distance(
         this->target);
     double amount = -this->drag.Y() * distance / 5.0;
-    this->viewControl.Zoom(amount);
+    this->viewControl->Zoom(amount);
   }
   else
   {
@@ -145,21 +191,21 @@ void InteractiveViewControlPrivate::OnRender()
     {
       this->target = this->ScreenToScene(
           this->mouseEvent.PressPos());
-      this->viewControl.SetTarget(this->target);
+      this->viewControl->SetTarget(this->target);
     }
 
     // Pan with left button
     if (this->mouseEvent.Buttons() & common::MouseEvent::LEFT)
     {
       if (Qt::ShiftModifier == QGuiApplication::queryKeyboardModifiers())
-        this->viewControl.Orbit(this->drag);
+        this->viewControl->Orbit(this->drag);
       else
-        this->viewControl.Pan(this->drag);
+        this->viewControl->Pan(this->drag);
     }
     // Orbit with middle button
     else if (this->mouseEvent.Buttons() & common::MouseEvent::MIDDLE)
     {
-      this->viewControl.Orbit(this->drag);
+      this->viewControl->Orbit(this->drag);
     }
     else if (this->mouseEvent.Buttons() & common::MouseEvent::RIGHT)
     {
@@ -171,7 +217,7 @@ void InteractiveViewControlPrivate::OnRender()
       double amount = ((-this->drag.Y() /
           static_cast<double>(this->camera->ImageHeight()))
           * distance * tan(vfov/2.0) * 6.0);
-      this->viewControl.Zoom(amount);
+      this->viewControl->Zoom(amount);
     }
   }
   this->drag = 0;
@@ -203,6 +249,21 @@ math::Vector3d InteractiveViewControlPrivate::ScreenToScene(
 }
 
 /////////////////////////////////////////////////
+bool InteractiveViewControlPrivate::OnViewControl(const msgs::StringMsg &_msg,
+  msgs::Boolean &_res)
+{
+  std::lock_guard<std::mutex> lock(this->mutex);
+  this->viewController = _msg.data();
+
+  // mark mouse dirty to trigger HandleMouseEvent call and
+  // set up a new view controller
+  this->mouseDirty = true;
+
+  _res.set_data(true);
+  return true;
+}
+
+/////////////////////////////////////////////////
 InteractiveViewControl::InteractiveViewControl()
   : Plugin(), dataPtr(std::make_unique<InteractiveViewControlPrivate>())
 {
@@ -217,6 +278,13 @@ InteractiveViewControl::~InteractiveViewControl()
 void InteractiveViewControl::LoadConfig(
   const tinyxml2::XMLElement * /*_pluginElem*/)
 {
+  // camera view control mode
+  this->dataPtr->cameraViewControlService = "/gui/camera/view_control";
+  this->dataPtr->node.Advertise(this->dataPtr->cameraViewControlService,
+      &InteractiveViewControlPrivate::OnViewControl, this->dataPtr.get());
+  ignmsg << "Camera view controller topic advertised on ["
+         << this->dataPtr->cameraViewControlService << "]" << std::endl;
+
   ignition::gui::App()->findChild<
     ignition::gui::MainWindow *>()->installEventFilter(this);
 }
